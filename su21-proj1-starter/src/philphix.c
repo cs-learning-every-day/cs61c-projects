@@ -38,8 +38,10 @@ HashTable *dictionary;
  * to standard error (stderr) as shown and it will be ignored in 
  * the grading process.
  */
-int main(int argc, char **argv) {
-  if (argc != 2) {
+int main(int argc, char **argv)
+{
+  if (argc != 2)
+  {
     fprintf(stderr, "Specify a dictionary\n");
     return 1;
   }
@@ -67,23 +69,60 @@ int main(int argc, char **argv) {
  * This should hash a string to a bucket index.  void *s can be safely cast
  * to a char * (null terminated string)
  */
-unsigned int stringHash(void *s) {
+unsigned int stringHash(void *s)
+{
   // -- TODO --
-  fprintf(stderr, "need to implement stringHash\n");
+  // fprintf(stderr, "need to implement stringHash\n");
 
   /* To suppress compiler warning until you implement this function, */
-  return 0;
+
+  char *str = (char *)s;
+  unsigned long hash = 0;
+  for (int i = 0; i < strlen(str); i++)
+  {
+    hash = hash * 31 + str[i];
+  }
+  return hash % dictionary->size;
+
+  // http://www.cse.yorku.ca/~oz/hash.html
+  // unsigned long hash = 5381;
+  // int c;
+  // while (c = *str)
+  // {
+  //   hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  //   str++;
+  // }
+  // return hash;
 }
 
 /*
  * This should return a nonzero value if the two strings are identical 
  * (case sensitive comparison) and 0 otherwise.
  */
-int stringEquals(void *s1, void *s2) {
+int stringEquals(void *s1, void *s2)
+{
   // -- TODO --
-  fprintf(stderr, "You need to implement stringEquals");
+  // fprintf(stderr, "You need to implement stringEquals");
+
   /* To suppress compiler warning until you implement this function */
-  return 0;
+  char *str1 = (char *)s1;
+  char *str2 = (char *)s2;
+  int len1 = strlen(str1);
+  int len2 = strlen(str2);
+
+  if (len1 != len2)
+  {
+    return 0;
+  }
+
+  for (int i = 0; i < len1; i++)
+  {
+    if (str1[i] != str2[i])
+    {
+      return 0;
+    }
+  }
+  return 1;
 }
 
 /*
@@ -98,9 +137,29 @@ int stringEquals(void *s1, void *s2) {
  * NOT exist, you should print some message to standard error and call exit(61)
  * to cleanly exit the program.
  */
-void readDictionary(char *dictName) {
+void readDictionary(char *dictName)
+{
   // -- TODO --
-  fprintf(stderr, "You need to implement readDictionary\n");
+  // fprintf(stderr, "You need to implement readDictionary\n");
+  FILE *fptr;
+
+  fptr = fopen(dictName, "r");
+  if (fptr == NULL)
+  {
+    printf("File Open Error!");
+    exit(EXIT_FAILURE);
+  }
+
+  char buffer[1024];
+  char *str1 = malloc(sizeof(char) * 61);
+  char *str2 = malloc(sizeof(char) * 61);
+  while (fgets(buffer, sizeof(buffer), fptr) != NULL) // one line
+  {
+    sscanf(buffer, "%s %s", str1, str2);
+    insertData(dictionary, str1, str2);
+  }
+
+  fclose(fptr);
 }
 
 /*
@@ -125,7 +184,105 @@ void readDictionary(char *dictName) {
  * numbers and punctuation) which are longer than 60 characters. Again, for the 
  * final bit of your grade, you cannot assume words have a bounded length.
  */
-void processInput() {
+void processInput()
+{
   // -- TODO --
-  fprintf(stderr, "You need to implement processInput\n");
+  // fprintf(stderr, "You need to implement processInput\n");
+  char buffer[1024];
+  char words[61];
+  char *data = malloc(sizeof(char) * 61);
+  if (NULL == data)
+  {
+    fprintf(stderr, "Malloc Error");
+    exit(EXIT_FAILURE);
+  }
+
+  while (fgets(buffer, sizeof(buffer), stdin) != NULL) // one line
+  {
+
+    // remove \n
+    buffer[strlen(buffer) - 1] = '\0';
+
+    // one word
+
+    int nums_now, bytes_now;
+    int bytes_consumed = 0;
+
+    while ((nums_now =
+                sscanf(buffer + bytes_consumed, "%s%n", words, &bytes_now)) > 0)
+    {
+      if (bytes_consumed != 0)
+      {
+        printf(" ");
+      }
+      bytes_consumed += bytes_now;
+      words[bytes_now] = '\0';
+
+      char tmp_words[strlen(words)];
+      strncpy(tmp_words, words, strlen(words));
+
+      // 去除标点符号
+      int i = 0;
+      char origin_punct[strlen(tmp_words)];
+      while (ispunct(tmp_words[strlen(tmp_words) - 1]))
+      {
+        origin_punct[i++] = tmp_words[strlen(tmp_words) - 1];
+        tmp_words[strlen(tmp_words) - 1] = '\0';
+      }
+      tmp_words[bytes_now] = '\0';
+
+      origin_punct[i] = '\0';
+
+      // case 1
+      data = (char *)findData(dictionary, (void *)tmp_words);
+      if (data != NULL)
+      {
+        fprintf(stdout, "%s%s", data, origin_punct);
+        continue;
+      }
+      // case 2
+      data = (char *)findData(dictionary, (void *)case23String(tmp_words, 2));
+      if (data != NULL)
+      {
+        fprintf(stdout, "%s%s", data, origin_punct);
+        continue;
+      }
+      // case 3
+      data = (char *)findData(dictionary, (void *)case23String(tmp_words, 3));
+      if (data != NULL)
+      {
+        fprintf(stdout, "%s%s", data, origin_punct);
+        continue;
+      }
+      fprintf(stdout, "%s", words);
+    }
+
+    fprintf(stdout, "\n");
+  }
+}
+
+char *case23String(char *buffer, int flag)
+{
+  if (flag == 2 && strlen(buffer) <= 1)
+    return buffer;
+  char *str = malloc(sizeof(char) * strlen(buffer));
+  int i;
+
+  str[0] = buffer[0];
+
+  if (flag == 2)
+  {
+    i = 1;
+  }
+  else
+  {
+    i = 0;
+  }
+
+  for (; buffer[i] != '\0'; i++)
+  {
+    str[i] = tolower(buffer[i]);
+  }
+  str[i] = '\0';
+  return str;
 }
