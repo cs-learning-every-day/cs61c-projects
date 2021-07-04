@@ -225,6 +225,7 @@ void processInput()
       getPuncts(words, origin_punct);
 
       char tmp_remove_str[61];
+      memset(tmp_remove_str, 0, 61);
       strncpy(tmp_remove_str, words, strlen(words));
       removePuncts(tmp_remove_str);
 
