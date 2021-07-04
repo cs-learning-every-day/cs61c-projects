@@ -12,6 +12,6 @@ extern void readDictionary(char *dictName);
 
 extern void processInput();
 
-char *case23String(char *buffer, int flag);
+void case23String(char *buffer, char *writer, int flag);
 
 #endif /* _PHILPHIX_H */

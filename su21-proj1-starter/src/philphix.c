@@ -218,40 +218,45 @@ void processInput()
       bytes_consumed += bytes_now;
       words[bytes_now] = '\0';
 
-      char tmp_words[strlen(words)];
-      strncpy(tmp_words, words, strlen(words));
+      // char tmp_words[strlen(words)];
+      // strncpy(tmp_words, words, strlen(words));
 
-      // 去除标点符号
-      int i = 0;
-      char origin_punct[strlen(tmp_words)];
-      while (ispunct(tmp_words[strlen(tmp_words) - 1]))
-      {
-        origin_punct[i++] = tmp_words[strlen(tmp_words) - 1];
-        tmp_words[strlen(tmp_words) - 1] = '\0';
-      }
-      tmp_words[bytes_now] = '\0';
+      // // 去除标点符号
+      // int i = 0;
+      // char origin_punct[strlen(tmp_words)];
+      // while (ispunct(tmp_words[strlen(tmp_words) - 1]))
+      // {
+      //   origin_punct[i++] = tmp_words[strlen(tmp_words) - 1];
+      //   tmp_words[strlen(tmp_words) - 1] = '\0';
+      // }
+      // tmp_words[bytes_now] = '\0';
 
-      origin_punct[i] = '\0';
+      // origin_punct[i] = '\0';
 
       // case 1
-      data = (char *)findData(dictionary, (void *)tmp_words);
+      data = (char *)findData(dictionary, (void *)words);
       if (data != NULL)
       {
-        fprintf(stdout, "%s%s", data, origin_punct);
+        fprintf(stdout, "%s", data);
         continue;
       }
       // case 2
-      data = (char *)findData(dictionary, (void *)case23String(tmp_words, 2));
+      char tmp_words[61];
+      case23String(words, tmp_words, 2);
+      data = (char *)findData(dictionary, (void *)tmp_words);
+
       if (data != NULL)
       {
-        fprintf(stdout, "%s%s", data, origin_punct);
+        fprintf(stdout, "%s", data);
         continue;
       }
       // case 3
-      data = (char *)findData(dictionary, (void *)case23String(tmp_words, 3));
+      case23String(words, tmp_words, 3);
+      data = (char *)findData(dictionary, (void *)tmp_words);
+
       if (data != NULL)
       {
-        fprintf(stdout, "%s%s", data, origin_punct);
+        fprintf(stdout, "%s", data);
         continue;
       }
       fprintf(stdout, "%s", words);
@@ -261,14 +266,18 @@ void processInput()
   }
 }
 
-char *case23String(char *buffer, int flag)
+void case23String(char *buffer, char *writer, int flag)
 {
-  if (flag == 2 && strlen(buffer) <= 1)
-    return buffer;
-  char *str = malloc(sizeof(char) * strlen(buffer));
-  int i;
+  if (strlen(buffer) == 0)
+    return;
 
-  str[0] = buffer[0];
+  writer[0] = buffer[0];
+  if (flag == 2 && strlen(buffer) == 1)
+  {
+    return;
+  }
+
+  int i;
 
   if (flag == 2)
   {
@@ -281,8 +290,7 @@ char *case23String(char *buffer, int flag)
 
   for (; buffer[i] != '\0'; i++)
   {
-    str[i] = tolower(buffer[i]);
+    writer[i] = tolower(buffer[i]);
   }
-  str[i] = '\0';
-  return str;
+  writer[i] = '\0';
 }

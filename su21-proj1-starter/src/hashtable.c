@@ -45,8 +45,7 @@ void insertData(HashTable *table, void *key, void *data)
   // 1. Find the right hash bucket location with table->hashFunction.
   // 2. Allocate a new hash bucket struct.
   // 3. Append to the linked list or create it if it does not yet exist.
-  int idx;
-  idx = table->hashFunction(key);
+  int idx = table->hashFunction(key);
   HashBucket *newBucked = malloc(sizeof(HashBucket));
   if (NULL == newBucked)
   {
@@ -58,18 +57,15 @@ void insertData(HashTable *table, void *key, void *data)
   newBucked->data = data;
 
   if (table->data[idx] == NULL)
-  { // 创建链接头
-    table->data[idx] = malloc(sizeof(HashBucket));
-    if (NULL == table->data[idx])
-    {
-      fprintf(stderr, "malloc failed \n");
-      exit(1);
-    }
+  {
+
+    table->data[idx] = newBucked;
     table->data[idx]->next = NULL;
+    return;
   }
 
-  newBucked->next = table->data[idx]->next;
-  table->data[idx]->next = newBucked;
+  newBucked->next = table->data[idx];
+  table->data[idx] = newBucked;
 }
 
 /*
@@ -83,10 +79,10 @@ void *findData(HashTable *table, void *key)
   // 1. Find the right hash bucket with table->hashFunction.
   // 2. Walk the linked list and check for equality with table->equalFunction.
   int idx = table->hashFunction(key);
-  if (table->data[idx] != NULL && table->data[idx]->next != NULL)
+  if (table->data[idx] != NULL)
   {
     // 可能会hash冲突
-    HashBucket *bucket = table->data[idx]->next;
+    HashBucket *bucket = table->data[idx];
     while (1)
     {
       if (table->equalFunction(bucket->key, key))
