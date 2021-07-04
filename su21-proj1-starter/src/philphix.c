@@ -160,6 +160,8 @@ void readDictionary(char *dictName)
     str1 = malloc(sizeof(char) * 61);
     str2 = malloc(sizeof(char) * 61);
   }
+  free(str1);
+  free(str2);
 
   fclose(fptr);
 }
