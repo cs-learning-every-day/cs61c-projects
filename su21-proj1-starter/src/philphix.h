@@ -13,5 +13,7 @@ extern void readDictionary(char *dictName);
 extern void processInput();
 
 void case23String(char *buffer, char *writer, int flag);
+void getPuncts(char *words, char *writer);
+void removePuncts(char *words);
 
 #endif /* _PHILPHIX_H */

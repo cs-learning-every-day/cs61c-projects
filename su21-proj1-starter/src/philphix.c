@@ -220,45 +220,39 @@ void processInput()
       bytes_consumed += bytes_now;
       words[bytes_now] = '\0';
 
-      // char tmp_words[strlen(words)];
-      // strncpy(tmp_words, words, strlen(words));
+      // ipsuM! -> i%#@!!
+      char origin_punct[strlen(words)];
+      getPuncts(words, origin_punct);
 
-      // // 去除标点符号
-      // int i = 0;
-      // char origin_punct[strlen(tmp_words)];
-      // while (ispunct(tmp_words[strlen(tmp_words) - 1]))
-      // {
-      //   origin_punct[i++] = tmp_words[strlen(tmp_words) - 1];
-      //   tmp_words[strlen(tmp_words) - 1] = '\0';
-      // }
-      // tmp_words[bytes_now] = '\0';
-
-      // origin_punct[i] = '\0';
+      char tmp_remove_str[61];
+      strncpy(tmp_remove_str, words, strlen(words));
+      removePuncts(tmp_remove_str);
 
       // case 1
-      data = (char *)findData(dictionary, (void *)words);
+      data = (char *)findData(dictionary, (void *)tmp_remove_str);
       if (data != NULL)
       {
-        fprintf(stdout, "%s", data);
+        fprintf(stdout, "%s%s", data, origin_punct);
         continue;
       }
+
       // case 2
       char tmp_words[61];
-      case23String(words, tmp_words, 2);
+      case23String(tmp_remove_str, tmp_words, 2);
       data = (char *)findData(dictionary, (void *)tmp_words);
-
       if (data != NULL)
       {
-        fprintf(stdout, "%s", data);
+        fprintf(stdout, "%s%s", data, origin_punct);
         continue;
       }
+
       // case 3
-      case23String(words, tmp_words, 3);
+      case23String(tmp_remove_str, tmp_words, 3);
       data = (char *)findData(dictionary, (void *)tmp_words);
 
       if (data != NULL)
       {
-        fprintf(stdout, "%s", data);
+        fprintf(stdout, "%s%s", data, origin_punct);
         continue;
       }
       fprintf(stdout, "%s", words);
@@ -266,6 +260,34 @@ void processInput()
 
     fprintf(stdout, "\n");
   }
+}
+
+// 去除标点符号
+void removePuncts(char *words)
+{
+  int idx = 0;
+  for (int i = 0; i < strlen(words); i++)
+  {
+    if (!ispunct(words[i]))
+    {
+      words[idx++] = words[i];
+    }
+  }
+  words[idx] = '\0';
+}
+
+// 获取除标点符号
+void getPuncts(char *words, char *writer)
+{
+  int idx = 0;
+  for (int i = 0; i < strlen(words); i++)
+  {
+    if (ispunct(words[i]))
+    {
+      writer[idx++] = words[i];
+    }
+  }
+  writer[idx] = '\0';
 }
 
 void case23String(char *buffer, char *writer, int flag)
@@ -292,7 +314,14 @@ void case23String(char *buffer, char *writer, int flag)
 
   for (; buffer[i] != '\0'; i++)
   {
-    writer[i] = tolower(buffer[i]);
+    if (isalpha(buffer[i]))
+    {
+      writer[i] = tolower(buffer[i]);
+    }
+    else
+    {
+      writer[i] = buffer[i];
+    }
   }
   writer[i] = '\0';
 }
