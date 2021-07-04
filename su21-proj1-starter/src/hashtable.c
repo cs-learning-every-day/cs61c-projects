@@ -46,7 +46,7 @@ void insertData(HashTable *table, void *key, void *data)
   // 2. Allocate a new hash bucket struct.
   // 3. Append to the linked list or create it if it does not yet exist.
   int idx = table->hashFunction(key);
-  HashBucket *newBucked = malloc(sizeof(HashBucket));
+  HashBucket *newBucked = (HashBucket *)malloc(sizeof(HashBucket));
   if (NULL == newBucked)
   {
     fprintf(stderr, "malloc failed \n");
@@ -61,11 +61,12 @@ void insertData(HashTable *table, void *key, void *data)
 
     table->data[idx] = newBucked;
     table->data[idx]->next = NULL;
-    return;
   }
-
-  newBucked->next = table->data[idx];
-  table->data[idx] = newBucked;
+  else
+  {
+    newBucked->next = table->data[idx];
+    table->data[idx] = newBucked;
+  }
 }
 
 /*

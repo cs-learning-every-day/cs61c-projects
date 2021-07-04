@@ -157,6 +157,8 @@ void readDictionary(char *dictName)
   {
     sscanf(buffer, "%s %s", str1, str2);
     insertData(dictionary, str1, str2);
+    str1 = malloc(sizeof(char) * 61);
+    str2 = malloc(sizeof(char) * 61);
   }
 
   fclose(fptr);
