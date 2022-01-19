@@ -28,6 +28,8 @@
  */
 #include <string.h>
 
+#include <assert.h>
+
 /*
  * This hash table stores the dictionary.
  */
@@ -139,30 +141,25 @@ int stringEquals(void *s1, void *s2)
  */
 void readDictionary(char *dictName)
 {
-  // -- TODO --
-  // fprintf(stderr, "You need to implement readDictionary\n");
-  FILE *fptr;
-
-  fptr = fopen(dictName, "r");
-  if (fptr == NULL)
-  {
-    printf("File Open Error!");
-    exit(EXIT_FAILURE);
+  FILE *fptr = fopen(dictName, "r");
+  if (fptr == NULL) {
+    fprintf(stderr, "Error: open dictionary file not exit: %s\n", dictName);
+    exit(61);
   }
 
-  char buffer[1024];
-  char *str1 = malloc(sizeof(char) * 61);
-  char *str2 = malloc(sizeof(char) * 61);
-  while (fgets(buffer, sizeof(buffer), fptr) != NULL) // one line
-  {
-    sscanf(buffer, "%s %s", str1, str2);
-    insertData(dictionary, str1, str2);
-    str1 = malloc(sizeof(char) * 61);
-    str2 = malloc(sizeof(char) * 61);
-  }
-  free(str1);
-  free(str2);
+  char *key = (char *)malloc(sizeof(char) * 70);
+  char *value = (char *)malloc(sizeof(char) * 70);
+  assert(key != NULL);
+  assert(value != NULL);
 
+  while (fscanf(fptr, " %1023s", key) == 1) {
+    if (fscanf(fptr, " %1023s", value) == 1) {
+      fprintf(stderr, "readDictionary: insert (%s, %s)\n", key, value);
+      insertData(dictionary, key, value); // hashtable里存储的是引用
+      key = (char *)malloc(sizeof(char) * 70);
+      value = (char *)malloc(sizeof(char) * 70);
+    }
+  }
   fclose(fptr);
 }
 
@@ -190,141 +187,74 @@ void readDictionary(char *dictName)
  */
 void processInput()
 {
-  // -- TODO --
-  // fprintf(stderr, "You need to implement processInput\n");
-  char buffer[1024];
-  char words[61];
-  char *data = malloc(sizeof(char) * 61);
-  if (NULL == data)
-  {
-    fprintf(stderr, "Malloc Error");
-    exit(EXIT_FAILURE);
-  }
+  char *str1 = (char *)malloc(70); // 正常情况
+  char *str2 = (char *)malloc(70); // 除第一个字母后面都是小写字母情况
+  char *str3 = (char *)malloc(70); // 全是小写字母情况
+  assert(str1 != NULL);
+  assert(str2 != NULL);
+  assert(str3 != NULL);
 
-  while (fgets(buffer, sizeof(buffer), stdin) != NULL) // one line
-  {
+  int c;
+  int i = 0;
+  int size = 70;
 
-    // remove \n
-    buffer[strlen(buffer) - 1] = '\0';
-
-    // one word
-
-    int nums_now, bytes_now;
-    int bytes_consumed = 0;
-
-    while ((nums_now =
-                sscanf(buffer + bytes_consumed, "%s%n", words, &bytes_now)) > 0)
-    {
-      if (bytes_consumed != 0)
-      {
-        printf(" ");
+  while ((c = fgetc(stdin)) != EOF) {
+    if (isalpha(c) != 0) {
+      if (i == size) {
+        size = size * 2;
+        str1 = (char *)realloc(str1, size);
+        str2 = (char *)realloc(str2, size);
+        str3 = (char *)realloc(str3, size);
+        assert(str1 != NULL);
+        assert(str2 != NULL);
+        assert(str3 != NULL);
       }
-      bytes_consumed += bytes_now;
-      words[bytes_now] = '\0';
-
-      // ipsuM! -> i%#@!!
-      char origin_punct[strlen(words)];
-      getPuncts(words, origin_punct);
-
-      char tmp_remove_str[61];
-      memset(tmp_remove_str, 0, 61);
-      strncpy(tmp_remove_str, words, strlen(words));
-      removePuncts(tmp_remove_str);
-
-      // case 1
-      data = (char *)findData(dictionary, (void *)tmp_remove_str);
-      if (data != NULL)
-      {
-        fprintf(stdout, "%s%s", data, origin_punct);
-        continue;
+      str1[i] = (char)c;
+      if (i == 0) {
+        str2[i] = (char)c;
+      } else {
+        str2[i] = (char)tolower(c);
       }
 
-      // case 2
-      char tmp_words[61];
-      case23String(tmp_remove_str, tmp_words, 2);
-      data = (char *)findData(dictionary, (void *)tmp_words);
-      if (data != NULL)
-      {
-        fprintf(stdout, "%s%s", data, origin_punct);
-        continue;
+      str3[i] = (char)tolower(c);
+      i++;
+    } else { // 符号
+      if (i != 0) {
+        printString(str1, str2, str3, i);
       }
-
-      // case 3
-      case23String(tmp_remove_str, tmp_words, 3);
-      data = (char *)findData(dictionary, (void *)tmp_words);
-
-      if (data != NULL)
-      {
-        fprintf(stdout, "%s%s", data, origin_punct);
-        continue;
-      }
-      fprintf(stdout, "%s", words);
+      fprintf(stdout, "%c", (char)c);
+      i = 0;
+      memset(str1, 0, strlen(str1));
+      memset(str2, 0, strlen(str2));
+      memset(str3, 0, strlen(str3));
     }
-
-    fprintf(stdout, "\n");
   }
+
+  if (i != 0) {
+    printString(str1, str2, str3, i);
+  }
+
+  free(str3);
+  free(str2);
+  free(str1);
 }
 
-// 去除标点符号
-void removePuncts(char *words)
-{
-  int idx = 0;
-  for (int i = 0; i < strlen(words); i++)
-  {
-    if (!ispunct(words[i]))
-    {
-      words[idx++] = words[i];
-    }
-  }
-  words[idx] = '\0';
-}
+void printString(char *str1, char *str2, char *str3, int i) {
+  str1[i] = '\0';
+  str2[i] = '\0';
+  str3[i] = '\0';
 
-// 获取除标点符号
-void getPuncts(char *words, char *writer)
-{
-  int idx = 0;
-  for (int i = 0; i < strlen(words); i++)
-  {
-    if (ispunct(words[i]))
-    {
-      writer[idx++] = words[i];
-    }
-  }
-  writer[idx] = '\0';
-}
+  char *tmp1 = (char *)findData(dictionary, str1);
+  char *tmp2 = (char *)findData(dictionary, str2);
+  char *tmp3 = (char *)findData(dictionary, str3);
 
-void case23String(char *buffer, char *writer, int flag)
-{
-  if (strlen(buffer) == 0)
-    return;
-
-  writer[0] = buffer[0];
-  if (flag == 2 && strlen(buffer) == 1)
-  {
-    return;
+  if (tmp1 != NULL) { // case 1
+    fprintf(stdout, "%s", tmp1);
+  } else if (tmp2 != NULL) { // case 2
+    fprintf(stdout, "%s", tmp2);
+  } else if (tmp3 != NULL) { // case 3
+    fprintf(stdout, "%s", tmp3);
+  } else {
+    fprintf(stdout, "%s", str1);
   }
-
-  int i;
-
-  if (flag == 2)
-  {
-    i = 1;
-  }
-  else
-  {
-    i = 0;
-  }
-
-  for (; buffer[i] != '\0'; i++)
-  {
-    if (isalpha(buffer[i]))
-    {
-      writer[i] = tolower(buffer[i]);
-    }
-    else
-    {
-      writer[i] = buffer[i];
-    }
-  }
-  writer[i] = '\0';
 }

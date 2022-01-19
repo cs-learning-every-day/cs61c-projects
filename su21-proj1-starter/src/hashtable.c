@@ -52,7 +52,6 @@ void insertData(HashTable *table, void *key, void *data)
     fprintf(stderr, "malloc failed \n");
     exit(1);
   }
-
   newBucked->key = key;
   newBucked->data = data;
 
