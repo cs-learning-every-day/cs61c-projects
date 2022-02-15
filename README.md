@@ -1,0 +1,2 @@
+- [X] Project 1: Philphix
+- [X] Project 2: CS61Classify

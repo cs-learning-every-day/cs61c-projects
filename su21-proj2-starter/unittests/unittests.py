@@ -1,8 +1,14 @@
 from unittest import TestCase
 from framework import AssemblyTest, print_coverage
 
-
 class TestAbs(TestCase):
+    def test_minus_one(self):
+        t = AssemblyTest(self, "abs.s")
+        t.input_scalar("a0", -1)
+        t.call("abs")
+        t.check_scalar("a0", 1)
+        t.execute()
+
     def test_zero(self):
         t = AssemblyTest(self, "abs.s")
         # load 0 into register a0
@@ -28,6 +34,23 @@ class TestAbs(TestCase):
 
 
 class TestRelu(TestCase):
+    def test_empty(self):
+        t = AssemblyTest(self, "relu.s")
+        array0 = t.array([])
+        t.input_array("a0", array0)
+        t.input_scalar("a1", len(array0))
+        t.call("relu")
+        t.execute(code=32)
+
+    def test_no_negative(self):
+        t = AssemblyTest(self, "relu.s")
+        array0 = t.array([1, 0, 3, 0, 5, 0, 7, 0, 9])
+        t.input_array("a0", array0)
+        t.input_scalar("a1", len(array0))
+        t.call("relu")
+        t.check_array(array0, [1, 0, 3, 0, 5, 0, 7, 0, 9])
+        t.execute()
+
     def test_simple(self):
         t = AssemblyTest(self, "relu.s")
         # create an array in the data section
@@ -49,20 +72,25 @@ class TestRelu(TestCase):
 
 
 class TestArgmax(TestCase):
+    def test_empty(self):
+        t = AssemblyTest(self, "argmax.s")
+        array0 = t.array([])
+        t.input_array("a0", array0)
+        t.input_scalar("a1", len(array0))
+        t.call("argmax")
+        t.execute(code=32)
+
     def test_simple(self):
         t = AssemblyTest(self, "argmax.s")
         # create an array in the data section
-        raise NotImplementedError("TODO")
-        # TODO
-        # load address of the array into register a0
-        # TODO
-        # set a1 to the length of the array
-        # TODO
-        # call the `argmax` function
-        # TODO
-        # check that the register a0 contains the correct output
-        # TODO
-        # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
+        array0 = t.array([1, -2, 3, -4, 5, -6, 7, -8, 9])
+        # load address of `array0` into register a0
+        t.input_array("a0", array0)
+        # set a1 to the length of our array
+        t.input_scalar("a1", len(array0))
+        # call the relu function
+        t.call("argmax")
+        t.check_scalar("a0", 8)
         t.execute()
 
     @classmethod

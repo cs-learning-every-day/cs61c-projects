@@ -14,25 +14,22 @@
 # ==============================================================================
 relu:
     # Prologue
-
+    add t0, x0, x0 # i = 0
+    add t1, a0, x0 # t1 = arr
+    bne a1, x0, loop_start
+    li a1, 32
+    j exit2
 
 loop_start:
-    
-
-
-
-
-
-
+    lw t2, 0(t1) # t2 = arr[i]
+    bge t2, x0, loop_continue # if t2 >= 0
+    sw x0, 0(t1) # else t2 = 0
 
 loop_continue:
-
-
+    addi t1, t1, 4
+    addi t0, t0, 1
+    blt t0, a1, loop_start
 
 loop_end:
-
-
     # Epilogue
-
-    
 	ret
