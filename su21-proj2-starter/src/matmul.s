@@ -32,12 +32,10 @@
 matmul:
 
     # Error checks
-    li t0, 1
-
-    ble a1, t0, error
-    ble a2, t0, error
-    ble a4, t0, error
-    ble a5, t0, error
+    ble a1, zero, error
+    ble a2, zero, error
+    ble a4, zero, error
+    ble a5, zero, error
     bne a2, a4, error
 
 
